@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secretar Inteligent</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --blue:#1a73e8; --blue-h:#1557b0; --blue-l:#e8f0fe;
+  --bg:#f1f3f4; --surface:#fff; --border:#dadce0;
+  --text:#202124; --muted:#5f6368; --dim:#bdc1c6;
+  --red:#d93025; --green:#188038; --orange:#e37400;
+  --purple:#7b5ea7; --gold:#e37400;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Roboto','Google Sans',sans-serif;min-height:100vh}
+.wrap{max-width:800px;margin:0 auto;padding:1.5rem 1rem 3rem}
+
+/* TOP BAR */
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:.75rem 1.5rem;
+  display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;
+  border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.topbar-logo{width:28px;height:28px}
+.topbar-title{font-family:'Google Sans',sans-serif;font-size:1.1rem;font-weight:500;color:var(--text)}
+.topbar-sub{font-size:.75rem;color:var(--muted);margin-left:auto;font-family:'Roboto Mono',monospace}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.5rem;
+  box-shadow:0 1px 2px rgba(0,0,0,.1);animation:fadeUp .3s ease}
+
+/* SECTION TITLE */
+.section-title{font-family:'Google Sans',sans-serif;font-size:1rem;font-weight:500;
+  color:var(--text);margin-bottom:.25rem}
+.section-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.4rem;font-family:'Google Sans',sans-serif;
+  font-size:.875rem;font-weight:500;cursor:pointer;border-radius:4px;
+  padding:.6rem 1.4rem;transition:all .15s;border:none;letter-spacing:.01em}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(26,115,232,.4)}
+.btn-primary:hover{background:var(--blue-h);box-shadow:0 2px 6px rgba(26,115,232,.45)}
+.btn-secondary{background:#fff;color:var(--blue);border:1px solid var(--border)}
+.btn-secondary:hover{background:#f8f9fa;border-color:#aaa}
+.btn-google{background:#fff;color:#3c4043;border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.btn-google:hover{background:#f8f9fa;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.btn-sm{font-size:.8rem;padding:.4rem .9rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.2rem}
+
+/* INPUTS */
+.input-label{font-size:.75rem;color:var(--muted);font-weight:500;display:block;
+  margin-bottom:.4rem;letter-spacing:.03em;text-transform:uppercase}
+.inp{width:100%;background:#fff;border:1px solid var(--border);border-radius:4px;
+  color:var(--text);font-family:'Roboto Mono',monospace;font-size:.83rem;padding:.7rem .9rem;
+  outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,115,232,.2)}
+.inp::placeholder{color:var(--dim)}
+.inp-group{margin-bottom:1rem}
+
+/* INFO / STEP BOXES */
+.info{background:#e8f0fe;border:1px solid #c5d9fc;border-radius:4px;
+  padding:.85rem 1rem;margin-bottom:1rem;font-size:.84rem;line-height:1.75;color:#174ea6}
+.info strong{color:#1a73e8}
+.info code{background:rgba(26,115,232,.12);color:#1a73e8;padding:.1rem .3rem;border-radius:3px;font-family:'Roboto Mono',monospace;font-size:.82em}
+
+.step-box{background:#f8f9fa;border:1px solid var(--border);border-radius:4px;
+  padding:1rem 1.1rem;margin-bottom:.65rem}
+.step-num{font-size:.7rem;font-weight:500;color:var(--blue);letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:.4rem}
+.step-text{font-size:.875rem;line-height:1.8;color:var(--muted)}
+.step-text strong{color:var(--text)}
+.step-text a{color:var(--blue);text-decoration:none}
+.step-text a:hover{text-decoration:underline}
+.step-text code{background:#f1f3f4;color:#202124;border:1px solid var(--border);
+  padding:.1rem .35rem;border-radius:3px;font-family:'Roboto Mono',monospace;font-size:.82em}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:.35rem;border-radius:12px;padding:.25rem .7rem;
+  font-size:.75rem;font-weight:500}
+.badge-green{background:#e6f4ea;color:#188038}
+.badge-gold{background:#e8f0fe;color:#1a73e8}
+.badge-red{background:#fce8e6;color:#d93025}
+
+/* SPINNER */
+.spinner-wrap{text-align:center;padding:3rem 1rem}
+.spinner{width:48px;height:48px;margin:0 auto 1.2rem;border:3px solid var(--border);
+  border-top:3px solid var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+
+/* TEXTAREA */
+.email-area{width:100%;background:#fff;border:1px solid var(--border);border-radius:4px;
+  color:var(--text);font-family:'Roboto Mono',monospace;font-size:.8rem;
+  padding:.85rem;resize:vertical;min-height:200px;outline:none;line-height:1.65}
+.email-area:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(26,115,232,.2)}
+
+/* TOOLBAR */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem}
+.count{font-size:.8rem;color:var(--muted);font-weight:500}
+
+/* EVENT CARDS */
+.ev-card{border-radius:4px;padding:.85rem 1rem;margin-bottom:.5rem;cursor:pointer;
+  transition:background .12s;display:flex;gap:.85rem;align-items:flex-start;
+  border:1px solid var(--border);background:#fff}
+.ev-card.sel{background:var(--blue-l);border-color:#aecbfa}
+.ev-card.done-ok{background:#e6f4ea;border-color:#a8d5b5;cursor:default}
+.ev-card.done-err{background:#fce8e6;border-color:#f5c6c2;cursor:default}
+.ev-card:not(.done-ok):not(.done-err):hover{background:#f8f9fa}
+
+.chk{width:18px;height:18px;flex-shrink:0;margin-top:2px;border:2px solid var(--dim);
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;transition:all .12s}
+.ev-card.sel .chk{border-color:var(--blue);background:var(--blue);color:#fff}
+.ev-card.done-ok .chk{border-color:var(--green);background:var(--green);color:#fff}
+.ev-card.done-err .chk{border-color:var(--red);background:var(--red);color:#fff}
+
+.ev-body{flex:1;min-width:0}
+.ev-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.25rem;align-items:center}
+.tag{font-size:.7rem;font-weight:500;border-radius:12px;padding:.15rem .5rem}
+.ev-title{font-size:.95rem;font-weight:500;margin-bottom:.2rem;line-height:1.3;color:var(--text)}
+.ev-meta{font-family:'Roboto Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:.15rem}
+.ev-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+.ev-sender{font-family:'Roboto Mono',monospace;font-size:.67rem;color:var(--dim);
+  margin-top:.12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-status{font-size:.75rem;font-weight:500;margin-top:.25rem}
+
+/* LOG */
+.log-box{background:#f8f9fa;border:1px solid var(--border);border-radius:4px;
+  padding:.75rem 1rem;margin-top:.85rem;font-family:'Roboto Mono',monospace;
+  font-size:.75rem;line-height:1.85}
+.log-ok{color:var(--green)} .log-err{color:var(--red)} .log-info{color:#5f6368}
+
+/* ERROR */
+.err-box{background:#fce8e6;border:1px solid #f5c6c2;border-radius:4px;padding:1rem;margin-bottom:1rem}
+.err-title{color:var(--red);font-weight:500;margin-bottom:.4rem}
+.err-msg{font-family:'Roboto Mono',monospace;font-size:.73rem;color:#c5221f;word-break:break-all;line-height:1.7}
+
+/* SUMMARY */
+.summary{border-left:3px solid var(--blue);padding-left:.85rem;margin-bottom:1.1rem;
+  font-size:.875rem;color:var(--muted);line-height:1.7}
+
+hr.div{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
+
+footer{text-align:center;margin-top:1.5rem;font-family:'Roboto Mono',monospace;
+  font-size:.65rem;color:var(--dim);letter-spacing:.12em}
+
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:1.3rem;border-bottom:1px solid var(--border)}
+.tab{flex:1;text-align:center;padding:.65rem .5rem;cursor:pointer;font-size:.8rem;
+  font-weight:500;color:var(--muted);transition:all .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover:not(.active){color:var(--text);background:#f8f9fa}
+
+/* CONNECT */
+.connect-center{text-align:center;padding:2rem 1rem}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:500px){.card{padding:1rem}.btn{font-size:.8rem;padding:.55rem 1rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <svg class="topbar-logo" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#1a73e8"/><text x="24" y="32" text-anchor="middle" fill="white" font-size="22" font-family="sans-serif">✦</text></svg>
+    <span class="topbar-title">Secretar Inteligent</span>
+    <span class="topbar-sub">CLAUDE AI · GOOGLE CALENDAR</span>
+  </div>
+  <div class="card" id="app"></div>
+</div>
+<footer>APLICAȚIE LOCALĂ · ANTHROPIC API · GOOGLE CALENDAR API</footer>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const S = {
+  screen: 'setup',  // setup|connect|home|input|processing|results|error
+  googleClientId: localStorage.getItem('si_gcid') || '',
+  anthropicKey:   localStorage.getItem('si_akey') || '',
+  accessToken:    '',
+  tokenExpiry:    0,
+  tokenClient:    null,
+  emailText:      '',
+  events:         [],
+  selected:       new Set(),
+  doneOk:         new Set(),
+  doneErr:        new Set(),
+  summary:        '',
+  error:          '',
+  log:            [],
+  setupTab:       0,   // 0=google 1=keys
+};
+// Determine initial screen
+if (S.googleClientId && S.anthropicKey) S.screen = 'connect';
+
+// ═══════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════
+const TYPES = {
+  meeting:    {icon:'🤝',label:'Ședință',  color:'#4A90D9'},
+  deadline:   {icon:'⏰',label:'Termen',   color:'#E05555'},
+  invitation: {icon:'📩',label:'Invitație',color:'#9B59B6'},
+  school:     {icon:'🎒',label:'Școală',   color:'#3DAB6A'},
+  reminder:   {icon:'🔔',label:'Reminder', color:'#E8953A'},
+};
+const PRI = {
+  high:  {label:'↑ URGENT',color:'#E05555'},
+  medium:{label:'→ MEDIU', color:'#E8953A'},
+  low:   {label:'↓ SCĂZUT',color:'#3DAB6A'},
+};
+const SAMPLE = `De la: diriginte@genesiscollege.ro
+Subiect: Ședință cu părinții clasa a 4-a
+Data: joi 24 aprilie 2026, ora 18:00
+Locație: Sala de consiliu, etaj 1
+Vă rugăm să confirmați prezența.
+
+---
+De la: noreply@teams.microsoft.com
+Subiect: Invitație: Weekly sync cu echipa - vineri 25 apr, 10:00-11:00
+Organizator: Manager
+Locație: Microsoft Teams
+
+---
+De la: biblioteca@genesiscollege.ro
+Subiect: Termen returnare cărți - 30 aprilie 2026
+Returnați cărțile împrumutate până pe 30 aprilie.
+
+---
+De la: hr@company.ro
+Subiect: Performance review - luni 27 apr, 14:00-15:00
+Camera: Meeting Room 3, etaj 2`;
+
+// ═══════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  app.className = 'card anim';
+  const screens = {
+    setup:      renderSetup,
+    connect:    renderConnect,
+    home:       renderHome,
+    input:      renderInput,
+    processing: renderProcessing,
+    results:    renderResults,
+    error:      renderError,
+  };
+  app.innerHTML = (screens[S.screen] || renderError)();
+  bind();
+}
+
+// ── SETUP ──────────────────────────────
+function renderSetup() {
+  const t = S.setupTab;
+  return `
+  <h2 style="font-size:1.3rem;font-weight:600;color:var(--gold);margin-bottom:.3rem">⚙️ Configurare inițială</h2>
+  <p style="color:var(--muted);font-size:.87rem;line-height:1.8;margin-bottom:1.3rem">
+    Trebuie să faci asta <strong style="color:var(--text)">o singură dată</strong>. Urmează pașii de mai jos.
+  </p>
+
+  <div class="tabs">
+    <div class="tab ${t===0?'active':''}" data-tab="0">① Google Cloud</div>
+    <div class="tab ${t===1?'active':''}" data-tab="1">② Cheile API</div>
+    <div class="tab ${t===2?'active':''}" data-tab="2">③ Server local</div>
+  </div>
+
+  ${t===0 ? `
+  <div class="step-box"><div class="step-num">PAS 1</div>
+    <div class="step-text">Mergi pe <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> și loghează-te cu contul Google.</div></div>
+
+  <div class="step-box"><div class="step-num">PAS 2</div>
+    <div class="step-text">Click pe selectorul de proiecte (sus stânga) → <strong style="color:var(--text)">New Project</strong> → numele: <code>Secretar Inteligent</code> → Create.</div></div>
+
+  <div class="step-box"><div class="step-num">PAS 3</div>
+    <div class="step-text">Meniu stânga → <strong style="color:var(--text)">APIs & Services → Library</strong> → caută <code>Google Calendar API</code> → click pe el → <strong style="color:var(--text)">Enable</strong>.</div></div>
+
+  <div class="step-box"><div class="step-num">PAS 4</div>
+    <div class="step-text">Meniu → <strong style="color:var(--text)">APIs & Services → Credentials</strong> → <strong style="color:var(--text)">+ Create Credentials → OAuth client ID</strong>.</div></div>
+
+  <div class="step-box"><div class="step-num">PAS 5</div>
+    <div class="step-text">Application type: <code>Web application</code> · Name: <code>Secretar Inteligent</code><br>
+    La <strong style="color:var(--text)">Authorized JavaScript origins</strong> adaugă: <code>http://localhost:8080</code><br>
+    → Create → <strong style="color:var(--gold)">Copiază Client ID</strong> (arată ca: <code>123456...apps.googleusercontent.com</code>)</div></div>
+
+  <div class="info">⚠️ Dacă apare un ecran "OAuth consent screen" înainte: alege <strong>External</strong>, completează numele aplicației, adaugă emailul tău la <strong>Test users</strong>, salvează.</div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" data-tab-go="1">Pasul următor →</button>
+  </div>` : ''}
+
+  ${t===1 ? `
+  <div class="step-box"><div class="step-num">GOOGLE CLIENT ID</div>
+    <div class="step-text" style="margin-bottom:.8rem">Din Google Cloud Console (pasul anterior), copiază Client ID:</div>
+    <div class="inp-group">
+      <input class="inp" id="gcidInput" type="text" placeholder="123456789-abc...apps.googleusercontent.com" value="${esc(S.googleClientId)}">
+    </div>
+  </div>
+
+  <div class="step-box"><div class="step-num">ANTHROPIC API KEY</div>
+    <div class="step-text" style="margin-bottom:.8rem">De la <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a> → Create Key:</div>
+    <div class="inp-group">
+      <input class="inp" id="akeyInput" type="password" placeholder="sk-ant-api03-..." value="${esc(S.anthropicKey)}">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" data-tab-go="0">← Înapoi</button>
+    <button class="btn btn-primary" id="saveKeysBtn">💾 Salvează cheile</button>
+  </div>` : ''}
+
+  ${t===2 ? `
+  <div class="info">
+    <strong>De ce e nevoie de un server local?</strong><br>
+    Google OAuth nu funcționează din <code>file://</code> (fișier deschis direct). Trebuie să rulezi un mini-server pe calculatorul tău — durează 10 secunde.
+  </div>
+
+  <div class="step-box"><div class="step-num">WINDOWS</div>
+    <div class="step-text">
+      1. Apasă <code>Win + R</code> → scrie <code>cmd</code> → Enter<br>
+      2. Navighează la folderul cu fișierul HTML: <code>cd C:\\Users\\NumeleTau\\Downloads</code><br>
+      3. Rulează: <code>python -m http.server 8080</code><br>
+      4. Deschide în browser: <code>http://localhost:8080/secretar-inteligent.html</code>
+    </div>
+  </div>
+
+  <div class="step-box"><div class="step-num">MAC / LINUX</div>
+    <div class="step-text">
+      1. Deschide Terminal<br>
+      2. <code>cd ~/Downloads</code> (sau folderul cu fișierul)<br>
+      3. <code>python3 -m http.server 8080</code><br>
+      4. Deschide: <code>http://localhost:8080/secretar-inteligent.html</code>
+    </div>
+  </div>
+
+  <div class="step-box"><div class="step-num">ALTERNATIVĂ — FĂRĂ TERMINAL</div>
+    <div class="step-text">
+      Instalează extensia <a href="https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer" target="_blank">Live Server</a> în VS Code → click dreapta pe fișier → <strong>Open with Live Server</strong>.
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" data-tab-go="1">← Înapoi</button>
+    ${S.googleClientId && S.anthropicKey ? '<button class="btn btn-primary" id="goConnectBtn">✅ Am pornit serverul →</button>' : ''}
+  </div>` : ''}`;
+}
+
+// ── CONNECT ────────────────────────────
+function renderConnect() {
+  const gcidShort = S.googleClientId.slice(0,20)+'...';
+  const akeyShort = S.anthropicKey.slice(0,12)+'...';
+  return `
+  <div class="connect-center">
+    <div style="font-size:3rem;margin-bottom:1.2rem">🔐</div>
+    <h2 style="font-size:1.4rem;font-weight:600;color:var(--gold);margin-bottom:.8rem">Conectează contul Google</h2>
+    <p style="color:var(--muted);line-height:1.9;font-size:.92rem;max-width:440px;margin:0 auto 1.5rem">
+      Aplicația are nevoie de acces la <strong style="color:var(--text)">Google Calendar</strong> pentru a adăuga evenimentele.
+      Nu îți cerem parola — folosim OAuth 2.0 (același sistem ca "Conectează-te cu Google").
+    </p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
+      <span class="badge badge-green">✓ Client ID: ${gcidShort}</span>
+      <span class="badge badge-green">✓ API Key: ${akeyShort}</span>
+    </div>
+    <button class="btn btn-google" id="connectGoogleBtn" style="font-size:.85rem;padding:.85rem 2rem">
+      <svg width="20" height="20" viewBox="0 0 48 48" style="margin-right:.4rem"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Conectează-te cu Google
+    </button>
+    <div style="margin-top:1.5rem">
+      <button class="btn btn-sm btn-secondary" id="changeSetupBtn">⚙️ Modifică configurarea</button>
+    </div>
+  </div>`;
+}
+
+// ── HOME ───────────────────────────────
+function renderHome() {
+  return `
+  <div style="text-align:center;padding:2.5rem 1rem">
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.8rem">
+      <span class="badge badge-green">✓ Google Calendar conectat</span>
+      <span class="badge badge-green">✓ Claude Haiku activ</span>
+    </div>
+    <span style="font-size:3.5rem;display:block;margin-bottom:1.2rem">📬</span>
+    <p style="color:var(--muted);line-height:1.9;font-size:.95rem;max-width:440px;margin:0 auto 2rem">
+      Copiază emailurile tale (de la școală, muncă, invitații) și Claude va extrage
+      evenimentele care vor fi adăugate <strong style="color:var(--gold)">direct în Google Calendar</strong>.
+    </p>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-primary" id="goInputBtn">✉️ INSEREAZĂ EMAILURI</button>
+      <button class="btn btn-secondary" id="demoBtn">👀 Demo</button>
+    </div>
+    <div style="margin-top:1.2rem">
+      <button class="btn btn-sm btn-secondary" id="reconnectBtn">🔄 Reconectează Google</button>
+      &nbsp;
+      <button class="btn btn-sm btn-secondary" id="changeSetupBtn">⚙️ Configurare</button>
+    </div>
+  </div>`;
+}
+
+// ── INPUT ──────────────────────────────
+function renderInput() {
+  return `
+  <p style="color:var(--muted);font-size:.88rem;margin-bottom:.75rem;line-height:1.8">
+    Copiază și lipește emailurile. Separă-le cu <code style="background:rgba(200,170,100,.1);color:var(--gold-l);padding:.1rem .35rem;border-radius:4px;font-family:'JetBrains Mono',monospace">---</code>
+  </p>
+  <textarea class="email-area" id="emailArea" placeholder="De la: diriginte@scoala.ro&#10;Subiect: Ședință părinți joi 24 apr, 18:00&#10;Locație: Sala de consiliu&#10;&#10;---&#10;&#10;De la: manager@work.ro&#10;Subiect: Review luni 27 apr, 14:00">${esc(S.emailText)}</textarea>
+  <div style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:.71rem;margin-top:.4rem">
+    Poți include orice format de email — Claude înțelege română și engleză
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" id="backHomeBtn">← Înapoi</button>
+    <button class="btn btn-primary" id="analyzeBtn">🔍 ANALIZEAZĂ CU AI</button>
+  </div>`;
+}
+
+// ── PROCESSING ─────────────────────────
+function renderProcessing() {
+  return `
+  <div class="spinner-wrap">
+    <div class="spinner"></div>
+    <div style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.82rem">Claude Haiku analizează emailurile...</div>
+    <div style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:.7rem;margin-top:.6rem">extrag evenimente, date și priorități</div>
+  </div>`;
+}
+
+// ── ERROR ──────────────────────────────
+function renderError() {
+  return `
+  <div class="err-box">
+    <div class="err-title">❌ Eroare</div>
+    <div class="err-msg">${esc(S.error)}</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" id="backInputBtn">← Încearcă din nou</button>
+    <button class="btn btn-secondary" id="backHomeBtn">🏠 Acasă</button>
+  </div>`;
+}
+
+// ── RESULTS ────────────────────────────
+function renderResults() {
+  const evs = S.events;
+  const pending = [...S.selected].filter(id => !S.doneOk.has(id) && !S.doneErr.has(id)).length;
+
+  const evHtml = evs.length === 0
+    ? `<div style="text-align:center;padding:2rem;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:.8rem">📭</div><p>Nu am găsit evenimente în emailurile furnizate.</p></div>`
+    : evs.map(ev => {
+        const tc = TYPES[ev.event_type] || TYPES.reminder;
+        const pr = PRI[ev.priority] || PRI.low;
+        const sel = S.selected.has(ev.id);
+        const ok  = S.doneOk.has(ev.id);
+        const err = S.doneErr.has(ev.id);
+        const cls = ok ? 'done-ok' : err ? 'done-err' : sel ? 'sel' : '';
+        const chk = ok ? '✓' : err ? '✗' : sel ? '✓' : '';
+        const statusHtml = ok
+          ? `<div class="ev-status" style="color:var(--green)">✅ Adăugat în Google Calendar</div>`
+          : err ? `<div class="ev-status" style="color:var(--red)">❌ Nu s-a putut adăuga</div>` : '';
+        const meta = [ev.date&&`📅 ${ev.date}`,ev.time&&`⏰ ${ev.time}`,ev.location&&`📍 ${ev.location}`].filter(Boolean).join('  ');
+        return `
+        <div class="ev-card ${cls}" data-id="${ev.id}">
+          <div class="chk">${chk}</div>
+          <div class="ev-body">
+            <div class="ev-tags">
+              <span class="tag" style="background:${tc.color}18;color:${tc.color};border:1px solid ${tc.color}35">${tc.icon} ${tc.label}</span>
+              <span class="tag" style="background:${pr.color}14;color:${pr.color}">${pr.label}</span>
+            </div>
+            <div class="ev-title">${esc(ev.title)}</div>
+            ${meta?`<div class="ev-meta">${meta}</div>`:''}
+            ${ev.description?`<div class="ev-desc">${esc(ev.description)}</div>`:''}
+            ${ev.sender?`<div class="ev-sender">✉ ${esc(ev.sender)}</div>`:''}
+            ${statusHtml}
+          </div>
+        </div>`;
+      }).join('');
+
+  const logHtml = S.log.length
+    ? `<div class="log-box">${S.log.map(l=>`<div class="${l.startsWith('✅')?'log-ok':l.startsWith('❌')||l.startsWith('⚠')?'log-err':'log-info'}">${esc(l)}</div>`).join('')}</div>`
+    : '';
+
+  return `
+  ${S.summary?`<div class="summary">${esc(S.summary)}</div>`:''}
+  <div class="toolbar">
+    <div class="count">${S.selected.size}/${evs.length} selectate</div>
+    <button class="btn btn-sm btn-secondary" id="toggleAllBtn">
+      ${S.selected.size===evs.length?'DESELECTEAZĂ TOT':'SELECTEAZĂ TOT'}
+    </button>
+  </div>
+  ${evHtml}
+  ${logHtml}
+  <hr class="div">
+  <div class="btn-row">
+    <button class="btn btn-secondary btn-sm" id="backInputBtn">← Mai multe emailuri</button>
+    <button class="btn btn-secondary btn-sm" id="backHomeBtn">🏠 Acasă</button>
+    <button class="btn btn-primary" id="addAllBtn" ${pending===0?'disabled':''}>
+      📅 ADAUGĂ ÎN CALENDAR (${pending})
+    </button>
+  </div>
+  <div style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:.65rem;margin-top:.7rem">
+    Evenimentele se adaugă direct în Google Calendar primar
+  </div>`;
+}
+
+// ═══════════════════════════════════════
+//  BIND EVENTS
+// ═══════════════════════════════════════
+function bind() {
+  const $ = id => document.getElementById(id);
+
+  // Setup tabs
+  document.querySelectorAll('[data-tab]').forEach(el =>
+    el.addEventListener('click', () => { S.setupTab = +el.dataset.tab; render(); }));
+  document.querySelectorAll('[data-tab-go]').forEach(el =>
+    el.addEventListener('click', () => { S.setupTab = +el.dataset.tabGo; render(); }));
+
+  if ($('saveKeysBtn')) $('saveKeysBtn').onclick = () => {
+    const gcid = $('gcidInput').value.trim();
+    const akey = $('akeyInput').value.trim();
+    if (!gcid || !gcid.includes('googleusercontent')) return alert('Client ID invalid — verifică să fie de la Google Cloud Console.');
+    if (!akey.startsWith('sk-')) return alert('API Key Anthropic invalid — trebuie să înceapă cu sk-ant-');
+    S.googleClientId = gcid; S.anthropicKey = akey;
+    localStorage.setItem('si_gcid', gcid);
+    localStorage.setItem('si_akey', akey);
+    S.setupTab = 2; render();
+  };
+
+  if ($('goConnectBtn')) $('goConnectBtn').onclick = () => { S.screen='connect'; render(); };
+  if ($('changeSetupBtn')) $('changeSetupBtn').onclick = () => { S.setupTab=0; S.screen='setup'; render(); };
+
+  // Connect screen
+  if ($('connectGoogleBtn')) $('connectGoogleBtn').onclick = initAndConnect;
+  if ($('reconnectBtn')) $('reconnectBtn').onclick = initAndConnect;
+
+  // Home
+  if ($('goInputBtn')) $('goInputBtn').onclick = () => { S.emailText=''; S.screen='input'; render(); };
+  if ($('demoBtn'))    $('demoBtn').onclick    = () => { S.emailText=SAMPLE; S.screen='input'; render(); };
+  if ($('backHomeBtn'))  $('backHomeBtn').onclick  = () => { S.screen='home'; render(); };
+  if ($('backInputBtn')) $('backInputBtn').onclick = () => { S.screen='input'; render(); };
+
+  // Input
+  if ($('analyzeBtn')) $('analyzeBtn').onclick = () => {
+    const txt = $('emailArea')?.value || '';
+    if (!txt.trim()) return;
+    S.emailText = txt; parseEmails();
+  };
+
+  // Results
+  if ($('toggleAllBtn')) $('toggleAllBtn').onclick = () => {
+    S.selected = S.selected.size === S.events.length ? new Set() : new Set(S.events.map(e=>e.id));
+    render();
+  };
+  if ($('addAllBtn')) $('addAllBtn').onclick = addAllToCalendar;
+
+  // Event card clicks
+  document.querySelectorAll('.ev-card').forEach(card =>
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      if (S.doneOk.has(id) || S.doneErr.has(id)) return;
+      S.selected.has(id) ? S.selected.delete(id) : S.selected.add(id);
+      render();
+    }));
+}
+
+// ═══════════════════════════════════════
+//  GOOGLE OAUTH
+// ═══════════════════════════════════════
+function initAndConnect() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    // GIS not loaded yet, retry
+    setTimeout(initAndConnect, 800);
+    document.getElementById('connectGoogleBtn') && (document.getElementById('connectGoogleBtn').textContent = '⏳ Se încarcă...');
+    return;
+  }
+  S.tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: S.googleClientId,
+    scope: 'https://www.googleapis.com/auth/calendar.events',
+    callback: (resp) => {
+      if (resp.error) {
+        S.error = 'Eroare OAuth: ' + (resp.error_description || resp.error);
+        S.screen = 'error'; render(); return;
+      }
+      S.accessToken = resp.access_token;
+      S.tokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
+      S.screen = 'home'; render();
+    }
+  });
+  S.tokenClient.requestAccessToken({ prompt: '' });
+}
+
+function ensureToken() {
+  return new Promise((resolve) => {
+    if (S.accessToken && Date.now() < S.tokenExpiry) { resolve(); return; }
+    // Token expired, re-request silently
+    S.tokenClient.callback = (resp) => {
+      if (!resp.error) {
+        S.accessToken = resp.access_token;
+        S.tokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
+      }
+      resolve();
+    };
+    S.tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+// ═══════════════════════════════════════
+//  CLAUDE HAIKU — PARSE EMAILS
+// ═══════════════════════════════════════
+async function parseEmails() {
+  S.screen = 'processing'; S.error = ''; render();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': S.anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 3000,
+        system: `Ești un asistent care extrage evenimente din emailuri în română.
+Categorii: meeting, deadline, invitation, school, reminder.
+Prioritate: high (azi/mâine/urgent), medium (săptămâna aceasta), low (altele).
+RĂSPUNDE EXCLUSIV cu JSON valid, fără markdown, fără text suplimentar:
+{"events":[{"id":"1","email_subject":"subiect","sender":"expeditor","event_type":"school","title":"titlu max 60 chars","date":"YYYY-MM-DD sau null","time":"HH:MM sau null","duration_minutes":60,"location":"locatie sau null","description":"max 100 chars","priority":"high|medium|low"}],"summary":"Rezumat 1-2 propozitii"}`,
+        messages: [{
+          role: 'user',
+          content: `Data azi: ${new Date().toLocaleDateString('ro-RO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.\nExtrage evenimentele:\n\n${S.emailText}`
+        }]
+      })
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(()=>'');
+      let msg = `HTTP ${res.status}`;
+      try { msg += ': ' + JSON.parse(t).error.message; } catch { msg += ': ' + t.slice(0,200); }
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const txt = data.content?.find(b=>b.type==='text')?.text || '';
+    let parsed;
+    try { parsed = JSON.parse(txt.replace(/```json|```/g,'').trim()); }
+    catch { throw new Error('Răspuns AI neparsabil: ' + txt.slice(0,200)); }
+    S.events = parsed.events || [];
+    S.summary = parsed.summary || '';
+    S.selected = new Set(S.events.map(e=>e.id));
+    S.doneOk = new Set(); S.doneErr = new Set(); S.log = [];
+    S.screen = 'results'; render();
+  } catch (err) {
+    S.error = err.message; S.screen = 'error'; render();
+  }
+}
+
+// ═══════════════════════════════════════
+//  GOOGLE CALENDAR — ADD EVENTS
+// ═══════════════════════════════════════
+async function addAllToCalendar() {
+  const toAdd = S.events.filter(e => S.selected.has(e.id) && !S.doneOk.has(e.id) && !S.doneErr.has(e.id));
+  if (!toAdd.length) return;
+
+  document.getElementById('addAllBtn').disabled = true;
+  S.log = ['📅 Se adaugă evenimentele în Google Calendar...'];
+  render();
+
+  await ensureToken();
+
+  for (const ev of toAdd) {
+    S.log = [...S.log, `⏳ ${ev.title}...`];
+    render();
+    try {
+      const body = buildCalendarEvent(ev);
+      const res = await fetch(
+        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${S.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        }
+      );
+      if (res.ok) {
+        S.doneOk.add(ev.id);
+        S.log = [...S.log.filter(l=>!l.includes('⏳')), `✅ Adăugat: ${ev.title}`];
+      } else {
+        const errData = await res.json().catch(()=>({}));
+        S.doneErr.add(ev.id);
+        S.log = [...S.log.filter(l=>!l.includes('⏳')), `❌ Eroare (${res.status}): ${ev.title} — ${errData.error?.message||''}`];
+      }
+    } catch (e) {
+      S.doneErr.add(ev.id);
+      S.log = [...S.log.filter(l=>!l.includes('⏳')), `❌ Eroare rețea: ${ev.title}`];
+    }
+    render();
+  }
+
+  const okCount = [...S.doneOk].length;
+  S.log = [...S.log, `🎉 Terminat! ${okCount} eveniment${okCount!==1?'e':''} adăugat${okCount!==1?'e':''} în calendar.`];
+  render();
+}
+
+function buildCalendarEvent(ev) {
+  const TZ = 'Europe/Bucharest';
+  const startDT = parseDateTime(ev.date, ev.time);
+  const endDT   = parseDateTime(ev.date, ev.time, ev.duration_minutes || 60);
+
+  const event = {
+    summary: ev.title,
+    description: [ev.description, ev.email_subject ? `Sursă email: ${ev.email_subject}` : ''].filter(Boolean).join('\n'),
+  };
+
+  if (ev.location) event.location = ev.location;
+
+  if (startDT.allDay) {
+    event.start = { date: startDT.val };
+    event.end   = { date: endDT.val };
+  } else {
+    event.start = { dateTime: startDT.val, timeZone: TZ };
+    event.end   = { dateTime: endDT.val,   timeZone: TZ };
+  }
+
+  // Add reminder 30 min before
+  event.reminders = { useDefault: false, overrides: [{ method: 'popup', minutes: 30 }] };
+
+  return event;
+}
+
+function parseDateTime(dateStr, timeStr, addMinutes = 0) {
+  // Try YYYY-MM-DD
+  const dm = dateStr?.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!dm) {
+    // Fallback: today
+    const d = new Date(); d.setDate(d.getDate() + Math.floor(addMinutes/1440));
+    return { val: d.toISOString().split('T')[0], allDay: true };
+  }
+  const [,y,mo,d] = dm;
+  if (!timeStr) {
+    const dt = new Date(`${y}-${mo}-${d}`);
+    if (addMinutes) dt.setDate(dt.getDate() + 1);
+    return { val: dt.toISOString().split('T')[0], allDay: true };
+  }
+  const tm = timeStr.match(/(\d{1,2}):(\d{2})/);
+  if (!tm) return { val: `${y}-${mo}-${d}`, allDay: true };
+  let totalMin = parseInt(tm[1])*60 + parseInt(tm[2]) + addMinutes;
+  const hh = String(Math.floor(totalMin/60) % 24).padStart(2,'0');
+  const mm = String(totalMin % 60).padStart(2,'0');
+  // Build ISO local datetime
+  const iso = `${y}-${mo}-${d}T${hh}:${mm}:00`;
+  return { val: iso, allDay: false };
+}
+
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+function esc(s=''){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ═══════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════
+render();
+</script>
+</body>
+</html>
